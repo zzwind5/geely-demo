@@ -25,4 +25,10 @@ public class EmployeeController {
         empImpl.addNew();
         return "Success";
     }
+
+    @GetMapping("/emp/update")
+    public String updateAge() {
+        empImpl.addAge();
+        return "Success Age";
+    }
 }

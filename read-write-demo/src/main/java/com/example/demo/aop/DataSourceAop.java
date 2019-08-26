@@ -1,6 +1,7 @@
 package com.example.demo.aop;
 
 import com.example.demo.util.DBContextHolder;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -10,14 +11,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataSourceAop {
 
-    @Pointcut("execution(* com.example.demo.mapper..*.get*(..))" +
-                " || execution(* com.example.demo.mapper..*.select*(..))")
+    @Pointcut("!@annotation(com.example.demo.annotation.Master) && (" +
+                "execution(* com.example.demo.mapper..*.get*(..))" +
+                " || execution(* com.example.demo.mapper..*.select*(..))" +
+                ")"
+    )
     public void readPointCut() {
 
     }
 
-    @Pointcut("execution(* com.example.demo.mapper..*.add*(..))" +
-                " || execution(* com.example.demo.mapper..*.insert*(..))")
+    @Pointcut("@annotation(com.example.demo.annotation.Master)" +
+                " || execution(* com.example.demo.mapper..*.add*(..))" +
+                " || execution(* com.example.demo.mapper..*.insert*(..))" +
+                " || execution(* com.example.demo.mapper..*.update*(..))"
+    )
     public void writePointcut() {
 
     }
@@ -42,12 +49,28 @@ public class DataSourceAop {
 
     @Before("readPointCut()")
     public void read() {
-        System.out.println("read");
-        DBContextHolder.slave();
+        if (DBContextHolder.get() != null){
+            System.out.println("read");
+            DBContextHolder.slave();
+        }
+    }
+
+    @After("readPointCut()")
+    public void clearRead() {
+        System.out.println("clear read");
+        DBContextHolder.clear();
     }
 
     @Before("writePointcut()")
     public void write() {
+        if (DBContextHolder.get())
+        System.out.println("write");
         DBContextHolder.master();
+    }
+
+    @After("writePointcut()")
+    public void clearWrite() {
+        System.out.println("clear write");
+        DBContextHolder.clear();
     }
 }

@@ -31,4 +31,12 @@ public class EmployeeImpl {
 
         mapper.insert(employee);
     }
+
+    public void addAge() {
+        Employee employee = mapper.selectById(1);
+        System.out.println(employee);
+        employee.setAge(employee.getAge() + 1);
+
+        mapper.updateById(employee);
+    }
 }

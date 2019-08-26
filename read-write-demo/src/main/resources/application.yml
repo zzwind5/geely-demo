@@ -2,17 +2,17 @@ spring:
   datasource:
     master:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://192.168.27.135:3306/master?characterEncoding=utf8
+      jdbc-url: jdbc:mysql://192.168.222.128:3306/master?characterEncoding=utf8
       username: root
       password: 123456
     slave1:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://192.168.27.135:3306/slave1?characterEncoding=utf8
+      jdbc-url: jdbc:mysql://192.168.222.128:3306/slave1?characterEncoding=utf8
       username: root
       password: 123456
     slave2:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://192.168.27.135:3306/slave2?characterEncoding=utf8
+      jdbc-url: jdbc:mysql://192.168.222.128:3306/slave2?characterEncoding=utf8
       username: root
       password: 123456
 

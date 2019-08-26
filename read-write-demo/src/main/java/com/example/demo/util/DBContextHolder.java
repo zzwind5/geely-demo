@@ -36,4 +36,8 @@ public class DBContextHolder {
             System.out.println("切换到了slave_2");
         }
     }
+
+    public static void clear() {
+        contextHolder.remove();
+    }
 }
