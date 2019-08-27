@@ -32,6 +32,7 @@ public class EmployeeImpl {
         mapper.insert(employee);
     }
 
+    @Master
     public void addAge() {
         Employee employee = mapper.selectById(1);
         System.out.println(employee);
