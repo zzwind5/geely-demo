@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 @Service
 public class MoveService {
 
+    private static final int PAGE_SIZE = 1000;
+
     @Resource
     private JdbcTemplate fromJdbcTemplate;
 
@@ -23,7 +25,13 @@ public class MoveService {
     public void move() {
         List<String> allTables = getAllTables();
 
-        allTables.forEach(this::moveTable);
+        allTables.forEach(tableName -> {
+            int tableCount = getTableCount(tableName);
+            int page = tableCount/PAGE_SIZE + 1;
+            for (int i = 1; i <= page; i++) {
+                moveTable(tableName, PAGE_SIZE, i);
+            }
+        });
     }
 
     public List<String> getAllTables() {
@@ -43,8 +51,9 @@ public class MoveService {
         });
     }
 
-    public void moveTable(String tableName) {
-        String sql = String.format("select * from %s", tableName);
+    public void moveTable(String tableName, int pageSize, int pageIndex) {
+        String sql = String.format("select * from %s limit %d, %d",
+                tableName, pageSize*(pageIndex-1), pageSize);
 
         List<Map<String, Object>> results = fromJdbcTemplate.queryForList(sql);
         if (results.isEmpty()) {
