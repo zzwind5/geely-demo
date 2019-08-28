@@ -1,12 +1,11 @@
 package com.example.demo.aop;
 
 import com.example.demo.util.DBContextHolder;
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
+//@Order(-99)
 @Aspect
 @Component
 public class DataSourceAop {
@@ -16,59 +15,67 @@ public class DataSourceAop {
                 " || execution(* com.example.demo.mapper..*.select*(..))" +
                 ")"
     )
-    public void readPointCut() {
+    public void readPointCut(){}
 
-    }
-
-    @Pointcut("@annotation(com.example.demo.annotation.Master)" +
-                " || execution(* com.example.demo.mapper..*.add*(..))" +
+    @Pointcut("!@annotation(com.example.demo.annotation.Master) && (" +
+                "execution(* com.example.demo.mapper..*.add*(..))" +
                 " || execution(* com.example.demo.mapper..*.insert*(..))" +
-                " || execution(* com.example.demo.mapper..*.update*(..))"
+                " || execution(* com.example.demo.mapper..*.update*(..))" +
+                " || execution(* com.example.demo.mapper..*.edit*(..))" +
+                " || execution(* com.example.demo.mapper..*.delete*(..))" +
+                " || execution(* com.example.demo.mapper..*.remove*(..))" +
+                ")"
     )
-    public void writePointcut() {
+    public void writePointcut() {}
 
+    @Pointcut("@annotation(com.example.demo.annotation.Master)")
+    public void masterPointcut() {}
+
+    @Around("masterPointcut()")
+    public Object masterAround(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        try {
+            DBContextHolder.master(true);
+            Object obj = proceedingJoinPoint.proceed();
+            return obj;
+        } catch (Throwable t) {
+            throw t;
+        } finally {
+            DBContextHolder.clear();
+        }
     }
-//    @Pointcut("!@annotation(com.example.demo.annotation.Master) " +
-//            "&& (execution(* com.example.demo.service.impl..*.select*(..)) " +
-//            "|| execution(* com.example.demo.service.impl..*.get*(..)))")
-//    public void readPointCut() {
-//
-//    }
-
-//    @Pointcut("@annotation(com.example.demo.annotation.Master) " +
-//            "|| execution(* com.example.demo.service.impl..*.insert*(..)) " +
-//            "|| execution(* com.example.demo.service.impl..*.add*(..)) " +
-//            "|| execution(* com.example.demo.service.impl..*.update*(..)) " +
-//            "|| execution(* com.example.demo.service.impl..*.edit*(..)) " +
-//            "|| execution(* com.example.demo.service.impl..*.delete*(..)) " +
-//            "|| execution(* com.example.demo.service.impl.EmployeeImpl.getAll(..)) " +
-//            "|| execution(* com.example.demo.service.impl.EmployeeImpl.(..))")
-//    public void writePointCut() {
-//
-//    }
 
     @Before("readPointCut()")
     public void read() {
-        if (DBContextHolder.get() != null){
-            System.out.println("read");
-            DBContextHolder.slave();
+        if (DBContextHolder.isMasterAnno()) {
+            return;
         }
+        System.out.println("read");
+        DBContextHolder.slave();
     }
 
     @After("readPointCut()")
     public void clearRead() {
+        if (DBContextHolder.isMasterAnno()) {
+            return;
+        }
         System.out.println("clear read");
         DBContextHolder.clear();
     }
 
     @Before("writePointcut()")
     public void write() {
+        if (DBContextHolder.isMasterAnno()) {
+            return;
+        }
         System.out.println("write");
-        DBContextHolder.master();
+        DBContextHolder.master(false);
     }
 
     @After("writePointcut()")
     public void clearWrite() {
+        if (DBContextHolder.isMasterAnno()) {
+            return;
+        }
         System.out.println("clear write");
         DBContextHolder.clear();
     }
