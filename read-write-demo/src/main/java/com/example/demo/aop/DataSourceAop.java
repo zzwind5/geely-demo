@@ -63,7 +63,6 @@ public class DataSourceAop {
 
     @Before("writePointcut()")
     public void write() {
-        if (DBContextHolder.get())
         System.out.println("write");
         DBContextHolder.master();
     }
